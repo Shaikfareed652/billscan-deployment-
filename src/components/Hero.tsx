@@ -1,6 +1,6 @@
 import { Upload, Play } from 'lucide-react';
 
-export default function Hero() {
+export default function Hero({ onPick }: { onPick?: () => void }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -20,14 +20,20 @@ export default function Hero() {
             Upload your bill. Get clarity. Save money.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up-delay-2">
-            <button className="group px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105">
+          <div className="flex flex-row gap-4 justify-center items-center animate-slide-up-delay-2">
+            <button
+              onClick={onPick}
+              className="group px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
+            >
               <Upload className="w-5 h-5" />
               Upload Bill
               <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
             </button>
 
-            <button className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-all duration-300 flex items-center gap-3 shadow-md hover:shadow-lg border-2 border-blue-600">
+            <button
+              onClick={onPick}
+              className="group px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
+            >
               <Play className="w-5 h-5" />
               Try Demo
             </button>

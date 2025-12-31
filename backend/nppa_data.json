@@ -1,0 +1,7 @@
+[
+  {"name": "CONSULTATION FEE", "category": "Consultation", "price": 500.0},
+  {"name": "XRAY CHEST", "category": "Imaging", "price": 300.0},
+  {"name": "CBC", "category": "Lab", "price": 150.0},
+  {"name": "MRI BRAIN", "category": "Imaging", "price": 5000.0},
+  {"name": "PARACETAMOL 500MG", "category": "Medicine", "price": 5.0}
+]

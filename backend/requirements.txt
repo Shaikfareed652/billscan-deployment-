@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pymongo
+google-cloud-vision
+python-dotenv
+scikit-learn
+numpy
+pandas
+Pillow
+python-multipart
+pdf2image
