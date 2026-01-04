@@ -10,10 +10,12 @@ export default function NavBar() {
 
         <nav>
           <ul className="flex items-center gap-6 text-gray-700">
-            <li><a href="#home" className="hover:text-blue-600">Home</a>               |</li>
-            <li><a href="#how-it-works" className="hover:text-blue-600">How It Works</a></li>
+            <li><a href="#home" className="hover:
+            .
+            text-blue-600">Home</a></li>
+            <li><a href="#how-it-works" className="hover:text-blue-800"></a></li>
             <li><a href="#features" className="hover:text-blue-600">Features</a></li>
-            <li><a href="#demo" className="hover:text-blue-600">Demo</a></li>
+            <li><a href="#demo" className="hover:text-blue-600"></a></li>
             <li><a href="#technology" className="hover:text-blue-600">Technology</a></li>
             <li><a href="#why" className="hover:text-blue-600">Why It Matters</a></li>
             <li><a href="#testimonials" className="hover:text-blue-600">Testimonials</a></li>

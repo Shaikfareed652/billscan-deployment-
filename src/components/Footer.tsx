@@ -7,8 +7,8 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">B</span>
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white-500 to-cyan-500 flex items-center justify-center">
+        <img src="/IMG_20251231_144047.png" alt="BillScan" className="w-56 h-auto object-contain" />
               </div>
               <span className="text-2xl font-bold text-white">BillScan</span>
             </div>
@@ -100,13 +100,13 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <a href="tel:+911234567890" className="hover:text-white transition-colors duration-200">
-                  +91 123 456 7890
+                <a href="tel:+919701864124" className="hover:text-white transition-colors duration-200">
+                  +91970184124
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <span>Bangalore, Karnataka, India</span>
+                <span>Hyderabad, Telangana, India</span>
               </li>
             </ul>
           </div>

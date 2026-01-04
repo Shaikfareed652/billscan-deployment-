@@ -82,7 +82,7 @@ export default function Technology() {
                 <div className="text-sm font-medium">Bill Upload</div>
               </div>
 
-              <div className="hidden md:block text-center text-3xl text-gray-600">→</div>
+              <div className="hidden md:block text-center text-3xl text-gray-600"></div>
 
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto bg-cyan-500 rounded-full flex items-center justify-center mb-3">
@@ -91,7 +91,7 @@ export default function Technology() {
                 <div className="text-sm font-medium">OCR + NLP</div>
               </div>
 
-              <div className="hidden md:block text-center text-3xl text-gray-600">→</div>
+              <div className="hidden md:block text-center text-3xl text-gray-600"></div>
 
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto bg-teal-500 rounded-full flex items-center justify-center mb-3">

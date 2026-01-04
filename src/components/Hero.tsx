@@ -29,7 +29,7 @@ export default function Hero({ onPick }: { onPick?: () => void }) {
             >
               <Upload className="w-5 h-5" />
               Upload Bill
-              <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              <span className="inline-block transition-transform group-hover:translate-x-1"></span>
             </button>
 
             <button
