@@ -1,5 +1,7 @@
 import { Brain, DollarSign, TrendingUp, FileText, Shield } from 'lucide-react';
 
+const FORM_LINK = 'https://forms.gle/AYbpwsveR4cBVSqU7';
+
 export default function Features() {
   const features = [
     {
@@ -35,7 +37,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section id="features" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -81,7 +83,7 @@ export default function Features() {
               Join thousands of patients who are taking control of their medical bills.
             </p>
 
-            <button className="w-full bg-white text-blue-600 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-300">
+            <button onClick={() => (window.location.href = FORM_LINK)} className="w-full bg-white text-blue-600 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-300">
               Upload Your Bill Now
             </button>
           </div>

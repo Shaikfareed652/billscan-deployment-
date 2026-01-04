@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import NavBar from './components/NavBar';
 import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
 import Features from './components/Features';
@@ -49,6 +50,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      <NavBar />
       <Hero onPick={openPicker} />
       <div className="max-w-3xl mx-auto p-4">
         <div className="flex items-center gap-3 mb-4">

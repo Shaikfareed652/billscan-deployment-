@@ -1,8 +1,10 @@
 import { Upload, Play } from 'lucide-react';
 
+const FORM_LINK = 'https://forms.gle/AYbpwsveR4cBVSqU7';
+
 export default function Hero({ onPick }: { onPick?: () => void }) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
       <div className="container mx-auto px-6 py-20 relative z-10">
@@ -22,7 +24,7 @@ export default function Hero({ onPick }: { onPick?: () => void }) {
 
           <div className="flex flex-row gap-4 justify-center items-center animate-slide-up-delay-2">
             <button
-              onClick={onPick}
+              onClick={() => (window.location.href = FORM_LINK)}
               className="group px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
             >
               <Upload className="w-5 h-5" />
@@ -31,7 +33,7 @@ export default function Hero({ onPick }: { onPick?: () => void }) {
             </button>
 
             <button
-              onClick={onPick}
+              onClick={() => (window.location.href = FORM_LINK)}
               className="group px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
             >
               <Play className="w-5 h-5" />

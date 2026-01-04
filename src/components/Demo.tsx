@@ -1,5 +1,7 @@
 import { AlertTriangle, CheckCircle, TrendingDown } from 'lucide-react';
 
+const FORM_LINK = 'https://forms.gle/AYbpwsveR4cBVSqU7';
+
 export default function Demo() {
   const billItems = [
     { name: 'Room Charges (2 days)', original: 8000, verified: 6000, status: 'overcharged' },
@@ -10,7 +12,7 @@ export default function Demo() {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section id="demo" className="py-20 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -113,7 +115,7 @@ export default function Demo() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+          <button onClick={() => (window.location.href = FORM_LINK)} className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
             Try It With Your Bill
           </button>
         </div>
