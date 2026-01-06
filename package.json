@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "predeploy": "npm run build && rm -rf docs && mkdir -p docs && cp -r dist/* docs/ && cp -f CNAME docs/ || true",
+    "deploy": "git add docs CNAME || true && git commit -m \"chore: deploy site\" || true && git push origin main"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

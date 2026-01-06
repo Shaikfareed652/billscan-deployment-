@@ -21,3 +21,17 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Backend and python artifacts
+backend/
+backend
+__pycache__/
+*.pyc
+.venv
+
+# Node
+node_modules/
+
+# Local env files
+.env.local
+.env.*.local
