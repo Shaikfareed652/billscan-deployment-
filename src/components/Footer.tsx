@@ -6,11 +6,11 @@ export default function Footer() {
       <div className="container mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white-500 to-cyan-500 flex items-center justify-center">
-        <img src="/IMG_20251231_144047.png" alt="BillScan" className="w-56 h-auto object-contain" />
-              </div>
-              <span className="text-2xl font-bold text-white">BillScan</span>
+            <div className="flex flex-col items-start gap-4 mb-6">
+              <a href="#home" className="flex-shrink-0">
+                <img src="/IMG_20251231_144047__1_-removebg-preview.png" alt="BillScan Logo" className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform hover:scale-110 duration-300" />
+              </a>
+              <span className="text-2xl sm:text-3xl font-bold text-white">BillScan</span>
             </div>
             <p className="text-gray-400 leading-relaxed mb-6">
               AI-powered hospital bill auditing for fair, transparent healthcare billing.

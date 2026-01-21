@@ -14,7 +14,10 @@ from fastapi.responses import JSONResponse
 from backend.ocr import extract_text
 from backend.parser import parse_bill
 from backend.model_ml import analyze_bill
-from backend.db import save_report
+from backend.db import save_report, get_db
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List, Dict
+from datetime import datetime, timezone
 BASE_DIR = Path(__file__).resolve().parent
 UPLOADS = BASE_DIR / "uploads"
 UPLOADS.mkdir(exist_ok=True)
@@ -90,6 +93,38 @@ async def upload(file: UploadFile = File(...)):
                 file_path.unlink()
         except Exception:
             pass
+
+
+
+class EarlyAccess(BaseModel):
+    name: str
+    email: EmailStr
+    company: Optional[str] = None
+
+
+@app.post("/early-access")
+async def create_early_access(payload: EarlyAccess):
+    try:
+        db = get_db()
+        col = db.get_collection("early_access")
+        doc = payload.dict()
+        # store ISO 8601 UTC timestamp
+        doc["createdAt"] = datetime.now(timezone.utc).isoformat()
+        col.insert_one(doc)
+        return JSONResponse(status_code=201, content={"success": True, "message": "Saved"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "message": str(e)})
+
+
+@app.get("/admin/early-access")
+async def list_early_access():
+    try:
+        db = get_db()
+        col = db.get_collection("early_access")
+        docs = list(col.find({}, {"_id": False}))
+        return JSONResponse(status_code=200, content={"success": True, "data": docs})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "message": str(e)})
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import WhyMatters from './components/WhyMatters';
 import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+import EarlyAccessForm from './components/EarlyAccessForm';
 
 function App() {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -52,9 +53,14 @@ function App() {
     <div className="min-h-screen bg-white">
       <NavBar />
       <Hero onPick={openPicker} />
-      <div className="max-w-3xl mx-auto p-4">
-        <div className="flex items-center gap-3 mb-4">
-          {loading && <div>Processing...</div>}
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4">
+          {loading && (
+            <div className="flex items-center gap-2 text-blue-600 font-medium text-sm sm:text-base">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              Processing...
+            </div>
+          )}
         </div>
         <input
           ref={fileRef}
@@ -64,16 +70,26 @@ function App() {
           onChange={onFileChange}
         />
 
-        {error && <div className="text-red-600">Error: {error}</div>}
-
-        {report && (
-          <div className="mt-4 bg-gray-50 p-4 rounded">
-            <h3 className="font-semibold mb-2">Report</h3>
-            <pre className="whitespace-pre-wrap text-sm">
-              {JSON.stringify(report, null, 2)}
-            </pre>
+        {error && (
+          <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm">
+            Error: {error}
           </div>
         )}
+
+        {report && (
+          <div className="mt-4 bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+            <h3 className="font-semibold mb-2 text-sm sm:text-base">Report</h3>
+            <div className="overflow-x-auto">
+              <pre className="whitespace-pre-wrap text-xs sm:text-sm max-h-96 overflow-y-auto">
+                {JSON.stringify(report, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        <div className="my-8">
+          <EarlyAccessForm />
+        </div>
       </div>
 
       <HowItWorks />
