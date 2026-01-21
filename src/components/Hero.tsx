@@ -8,6 +8,11 @@ const scrollToForm = () => {
 };
 
 export default function Hero({ onPick }: { onPick?: () => void }) {
+  const handlePick = () => {
+    if (onPick) {
+      onPick();
+    }
+  };
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
