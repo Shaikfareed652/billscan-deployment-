@@ -60,7 +60,7 @@ export default function EarlyAccessForm() {
       } else {
         throw new Error("Submission failed");
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("Something went wrong. Please try again.");
       console.error(err);
     } finally {

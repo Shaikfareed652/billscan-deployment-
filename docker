@@ -1,0 +1,32 @@
+# 1. Start with Python 3.10 (lightweight version)
+FROM python:3.10-slim
+
+# 2. Install system tools your app needs
+#    - poppler-utils  → needed to read PDF files
+#    - libgl1-mesa-glx → needed for image processing
+#    - libglib2.0-0   → needed for EasyOCR
+RUN apt-get update && apt-get install -y \
+    poppler-utils \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to keep image small
+
+# 3. Set working directory inside container
+WORKDIR /app
+
+# 4. Install Python packages FIRST (faster rebuilds)
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Pre-download EasyOCR models at build time
+#    (So users don't wait for download on first request)
+RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
+
+# 6. Copy your backend code into container
+COPY backend/ .
+
+# 7. Open port 8000 for traffic
+EXPOSE 8000
+
+# 8. Start the server when container runs
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

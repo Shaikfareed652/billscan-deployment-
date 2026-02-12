@@ -8,11 +8,6 @@ const scrollToForm = () => {
 };
 
 export default function Hero({ onPick }: { onPick?: () => void }) {
-  const handlePick = () => {
-    if (onPick) {
-      onPick();
-    }
-  };
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -34,7 +29,7 @@ export default function Hero({ onPick }: { onPick?: () => void }) {
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-slide-up-delay-2 w-full px-4 sm:px-0">
             <button
-              onClick={scrollToForm}
+              onClick={onPick ?? scrollToForm}
               className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-lg font-semibold text-sm sm:text-base lg:text-lg hover:bg-blue-700 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl hover:scale-105"
             >
               <Upload className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -42,7 +37,7 @@ export default function Hero({ onPick }: { onPick?: () => void }) {
             </button>
 
             <button
-              onClick={scrollToForm}
+              onClick={onPick ?? scrollToForm}
               className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-lg font-semibold text-sm sm:text-base lg:text-lg hover:bg-blue-700 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl hover:scale-105"
             >
               <Play className="w-4 sm:w-5 h-4 sm:h-5" />
