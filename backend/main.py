@@ -36,10 +36,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 # Import our custom modules
-from backend.ocr import extract_text
-from backend.parser import parse_bill
-from backend.analyzer import analyze_bill
-from backend.db import save_report
+# ✅ CORRECT
+from analyzer import analyze_bill
+from parser import parse_bill
+from ocr import extract_text
+from db import save_report
 from backend.schemas import (
     UploadResponse,
     BillAnalysisResult,
