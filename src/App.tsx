@@ -1,3 +1,5 @@
+import { useAuth } from "./context/AuthContext";
+import LoginPage from "./pages/LoginPage";
 import React, { useRef, useState } from 'react';
 import NavBar from './components/NavBar';
 import Hero from './components/Hero';
@@ -34,6 +36,15 @@ interface AnalysisReport {
 }
 
 function App() {
+  const { user, token, logout, isLoading } = useAuth();
+
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0014' }}>
+      <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!user) return <LoginPage onSuccess={() => {}} />;
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,12 +63,19 @@ function App() {
       const form = new FormData();
       form.append('file', file, file.name);
 
-      const uploadRes = await fetch('/api/upload-bill', { method: 'POST', body: form });
+      const uploadRes = await fetch('/api/upload-bill', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: form,
+      });
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData?.detail || 'Upload failed');
       if (!uploadData?.file_id) throw new Error('No file ID returned');
 
-      const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, { method: 'POST' });
+      const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       if (!analyzeRes.ok) {
         const err = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
         throw new Error(err?.detail || 'Analysis failed');
@@ -229,7 +247,18 @@ function App() {
 
   return (
 <div className="min-h-screen bg-transparent">
-        <NavBar />
+        <div className="fixed top-2 right-4 z-50 flex items-center gap-3">
+        <span className="text-xs px-3 py-1 rounded-full"
+          style={{ background: 'rgba(139,92,246,0.2)', color: '#c4b5fd' }}>
+          👤 {user.email}
+        </span>
+        <button onClick={logout}
+          className="text-xs px-3 py-1 rounded-full font-semibold"
+          style={{ background: 'rgba(239,68,68,0.2)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)' }}>
+          Logout
+        </button>
+      </div>
+      <NavBar />
 
       {/* ── Hero with Shader Background ── */}
       <Hero onPick={openPicker} />
