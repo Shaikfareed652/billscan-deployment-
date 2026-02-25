@@ -1,7 +1,3 @@
 # Backend package init
-__all__ = [
-    "ocr",
-    "parser",
-    "model_ml",
-    "db",
-]
+# This file exists to make `backend` a package.
+# Exported modules are imported explicitly where needed.

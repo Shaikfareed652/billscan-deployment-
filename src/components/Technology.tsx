@@ -30,11 +30,15 @@ export default function Technology() {
   ];
 
   return (
-    <section id="technology" className="py-12 sm:py-20 bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl hidden sm:block"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500 rounded-full blur-3xl hidden sm:block"></div>
-      </div>
+    <section
+  id="technology"
+  className="py-12 sm:py-20 bg-gradient-to-br from-white to-gray-100 text-black relative overflow-hidden"
+>
+  <div className="absolute inset-0 opacity-10">
+    <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl hidden sm:block"></div>
+    <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500 rounded-full blur-3xl hidden sm:block"></div>
+  </div>
+
 
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="text-center mb-12 sm:mb-16">

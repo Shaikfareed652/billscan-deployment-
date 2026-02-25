@@ -43,7 +43,7 @@ function App() {
       const form = new FormData();
       form.append('file', file, file.name);
 
-      const uploadRes = await fetch('http://localhost:8000/upload-bill', {
+      const uploadRes = await fetch('/api/upload-bill', {
         method: 'POST',
         body: form,
       });
@@ -56,31 +56,48 @@ function App() {
         throw new Error(uploadData?.detail || uploadData?.error || `Upload failed with status ${uploadRes.status}`);
       }
 
-      if (!uploadData?.file_path) {
-        throw new Error('Upload succeeded but no file path returned. Backend error.');
+      if (!uploadData?.file_id) {
+        throw new Error('Upload succeeded but no file ID returned. Backend error.');
       }
 
-      console.log("✅ Upload successful! File path:", uploadData.file_path);
+      console.log("✅ Upload successful! File ID:", uploadData.file_id);
 
       // Step 2: Analyze the uploaded file
-      console.log("🔄 Starting analysis at /analyze-bill...");
-      const analyzeUrl = `http://localhost:8000/analyze-bill?file_path=${encodeURIComponent(uploadData.file_path)}`;
+      console.log("🔄 Starting analysis at /analyze (this may take 2-10 seconds)...");
+      const analyzeUrl = `/api/analyze/${uploadData.file_id}`;
       console.log("🔄 Analyze URL:", analyzeUrl);
 
-      const analyzeRes = await fetch(analyzeUrl, {
-        method: 'POST',
-      });
+      try {
+        const analyzeRes = await fetch(analyzeUrl, {
+          method: 'POST',
+        });
 
-      console.log("📊 Analysis response status:", analyzeRes.status);
-      const analysis = await analyzeRes.json();
-      console.log("📊 Analysis response data:", analysis);
+        console.log("📊 Analysis response status:", analyzeRes.status);
+        
+        if (!analyzeRes.ok) {
+          const errorData = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
+          throw new Error(errorData?.detail || `Analysis failed with status ${analyzeRes.status}`);
+        }
 
-      if (!analyzeRes.ok) {
-        throw new Error(analysis?.detail || `Analysis failed with status ${analyzeRes.status}`);
+        const analysis = await analyzeRes.json();
+        console.log("📊 Analysis response data:", analysis);
+
+        if (!analysis) {
+          throw new Error('No analysis data received from server');
+        }
+
+        console.log("✅ Analysis complete!");
+        setReport(analysis);
+      } catch (fetchError: unknown) {
+        const fetchMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        console.error("❌ Analysis fetch error:", fetchMsg);
+        
+        // Check if it's a network error
+        if (fetchMsg.includes('Failed to fetch') || fetchMsg.includes('Network')) {
+          throw new Error(`Network error: Could not connect to backend. Make sure backend is running on port 8000. Error: ${fetchMsg}`);
+        }
+        throw fetchError;
       }
-
-      console.log("✅ Analysis complete! Verdict:", analysis.verdict);
-      setReport(analysis);
     } catch (e: unknown) {
       const errorMsg = e instanceof Error ? e.message : String(e);
       console.error("❌ Error:", errorMsg, e);
@@ -100,8 +117,24 @@ function App() {
   // Parse report to show formatted verdict
   const getVerdictBadge = () => {
     if (!report || typeof report !== 'object') return null;
-    const verdict = (report as any).verdict;
-    if (!verdict) return null;
+    
+    const reportData = report as any;
+    const items = reportData.items || [];
+    const summary = reportData.summary || {};
+    
+    // Calculate overall verdict based on overpriced percentage
+    const totalItems = summary.total_items || 0;
+    const overpricedCount = summary.overpriced_count || 0;
+    const percentOverpriced = totalItems > 0 ? (overpricedCount / totalItems) * 100 : 0;
+    
+    let verdict = 'GREEN';
+    if (percentOverpriced > 50) verdict = 'RED';
+    else if (percentOverpriced > 20) verdict = 'YELLOW';
+    
+    // Calculate possible savings from overpriced items
+    const savings = items
+      .filter((item: any) => item.verdict === 'Overpriced')
+      .reduce((total: number, item: any) => total + (item.difference || 0), 0);
     
     const badgeMap: { [key: string]: { bg: string; text: string; emoji: string } } = {
       'GREEN': { bg: 'bg-green-100', text: 'text-green-700', emoji: '🟢' },
@@ -109,13 +142,13 @@ function App() {
       'RED': { bg: 'bg-red-100', text: 'text-red-700', emoji: '🔴' },
     };
     
-    const style = badgeMap[verdict] || { bg: 'bg-gray-100', text: 'text-gray-700', emoji: '❓' };
-    const savings = (report as any).possible_savings || 0;
+    const style = badgeMap[verdict];
     
     return (
       <div className={`${style.bg} ${style.text} p-4 rounded-lg mb-4 border`}>
         <div className="text-lg font-bold mb-2">{style.emoji} Verdict: {verdict}</div>
-        <div className="text-sm">Possible Savings: <span className="font-semibold">₹{savings}</span></div>
+        <div className="text-sm mb-2">Overpriced Items: <span className="font-semibold">{overpricedCount}/{totalItems}</span></div>
+        <div className="text-sm">Possible Savings: <span className="font-semibold">₹{savings.toFixed(2)}</span></div>
       </div>
     );
   };
