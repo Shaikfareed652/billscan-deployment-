@@ -4,7 +4,14 @@ export default function NavBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="w-full bg-white/90 backdrop-blur-sm sticky top-0 z-40 shadow-sm">
+    <header
+      className="w-full sticky top-0 z-40"
+      style={{
+        background: 'rgb(237, 227, 227)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(139,92,246,0.2)',
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
 
@@ -19,30 +26,36 @@ export default function NavBar() {
 
           {/* Desktop Menu */}
           <nav className="hidden md:flex">
-            <ul className="flex items-center gap-4 lg:gap-6 text-gray-700 text-xs sm:text-sm lg:text-base">
-              <li><a href="#home" className="hover:text-blue-600">Home</a></li>
-              <li><a href="#how-it-works" className="hover:text-blue-600">How It Works</a></li>
-              <li><a href="#features" className="hover:text-blue-600">Features</a></li>
-              <li><a href="#technology" className="hover:text-blue-600">Technology</a></li>
-              <li><a href="#why" className="hover:text-blue-600">Why It Matters</a></li>
-              <li><a href="#testimonials" className="hover:text-blue-600">Testimonials</a></li>
-              <li><a href="#faq" className="hover:text-blue-600">FAQ</a></li>
+            <ul className="flex items-center gap-4 lg:gap-6 text-xs sm:text-sm lg:text-base">
+              {[
+                ['#home','Home'],
+                ['#how-it-works','How It Works'],
+                ['#features','Features'],
+                ['#why','Why It Matters'],
+                ['#faq','FAQ'],
+                ['#contact','Contact']
+              ].map(([href, label]) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    className="transition-colors duration-200 hover:text-purple-300"
+                    style={{ color: '#161518' }}
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:bg-gray-100"
+            className="md:hidden inline-flex items-center justify-center rounded-lg p-2"
+            style={{ color: '#c4b5fd' }}
             aria-label="Toggle menu"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               {open ? (
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               ) : (
@@ -55,15 +68,32 @@ export default function NavBar() {
 
       {/* Mobile Menu */}
       {open && (
-        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
-          <ul className="flex flex-col px-4 py-4 space-y-2 sm:space-y-3 text-gray-700 text-sm">
-            <li><a onClick={() => setOpen(false)} href="#home">Home</a></li>
-            <li><a onClick={() => setOpen(false)} href="#how-it-works">How It Works</a></li>
-            <li><a onClick={() => setOpen(false)} href="#features">Features</a></li>
-            <li><a onClick={() => setOpen(false)} href="#technology">Technology</a></li>
-            <li><a onClick={() => setOpen(false)} href="#why">Why It Matters</a></li>
-            <li><a onClick={() => setOpen(false)} href="#testimonials">Testimonials</a></li>
-            <li><a onClick={() => setOpen(false)} href="#faq">FAQ</a></li>
+        <div
+          className="md:hidden"
+          style={{
+            background: 'rgba(10,0,20,0.95)',
+            borderTop: '1px solid rgba(139,92,246,0.2)',
+          }}
+        >
+          <ul className="flex flex-col px-4 py-4 space-y-3 text-sm" style={{ color: '#c4b5fd' }}>
+            {[
+              ['#home', 'Home'],
+              ['#how-it-works', 'How It Works'],
+              ['#features', 'Features'],
+              ['#why', 'Why It Matters'],
+              ['#faq', 'FAQ'],
+              ['#contact', 'Contact'],
+            ].map(([href, label]) => (
+              <li key={href}>
+                <a
+                  onClick={() => setOpen(false)}
+                  href={href}
+                  className="hover:text-purple-300 transition-colors"
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       )}

@@ -26,7 +26,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <section id="testimonials" className="py-12 sm:py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section id="testimonials" className="py-12 sm:py-20">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -41,7 +41,7 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+              className="rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
             >
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
@@ -67,7 +67,7 @@ export default function Testimonials() {
         </div>
 
         <div className="mt-16 text-center">
-          <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-md">
+          <div className="inline-flex items-center gap-3 rounded-full px-6 py-3 shadow-md">
             <div className="flex -space-x-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 border-2 border-white"></div>
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 border-2 border-white"></div>

@@ -4,16 +4,38 @@ import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
 import Features from './components/Features';
 import Demo from './components/Demo';
-import Technology from './components/Technology';
 import WhyMatters from './components/WhyMatters';
-import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import EarlyAccessForm from './components/EarlyAccessForm';
 
+interface BillItem {
+  name: string;
+  bill_amount: number;
+  reference_price: number;
+  difference: number;
+  verdict: string;
+  category?: string;
+  matched_as?: string;
+}
+
+interface ReportSummary {
+  total_items: number;
+  overpriced_count: number;
+  total_billed: number;
+  total_savings: number;
+  overall_verdict: string;
+}
+
+interface AnalysisReport {
+  items: BillItem[];
+  summary: ReportSummary;
+  warning?: string;
+}
+
 function App() {
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const [report, setReport] = useState<unknown | null>(null);
+  const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,151 +43,199 @@ function App() {
 
   const upload = async (file: File) => {
     try {
-      console.log("📤 Starting upload...", { fileName: file.name, fileSize: file.size, fileType: file.type });
       setLoading(true);
       setError(null);
       setReport(null);
 
-      // Validate file
-      if (!file) {
-        throw new Error('No file selected');
-      }
-      if (file.size > 50 * 1024 * 1024) {
-        throw new Error('File too large (max 50 MB)');
-      }
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff', 'application/pdf'];
-      if (!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|gif|bmp|tiff|pdf)$/i)) {
-        throw new Error('Invalid file type. Use JPG, PNG, PDF, etc.');
-      }
+      if (file.size > 50 * 1024 * 1024) throw new Error('File too large (max 50MB)');
 
-      // Step 1: Upload file
-      console.log("📤 Uploading to /upload-bill endpoint...");
       const form = new FormData();
       form.append('file', file, file.name);
 
-      const uploadRes = await fetch('/api/upload-bill', {
-        method: 'POST',
-        body: form,
-      });
-
-      console.log("📬 Upload response status:", uploadRes.status);
+      const uploadRes = await fetch('/api/upload-bill', { method: 'POST', body: form });
       const uploadData = await uploadRes.json();
-      console.log("📬 Upload response data:", uploadData);
+      if (!uploadRes.ok) throw new Error(uploadData?.detail || 'Upload failed');
+      if (!uploadData?.file_id) throw new Error('No file ID returned');
 
-      if (!uploadRes.ok) {
-        throw new Error(uploadData?.detail || uploadData?.error || `Upload failed with status ${uploadRes.status}`);
+      const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, { method: 'POST' });
+      if (!analyzeRes.ok) {
+        const err = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(err?.detail || 'Analysis failed');
       }
 
-      if (!uploadData?.file_id) {
-        throw new Error('Upload succeeded but no file ID returned. Backend error.');
-      }
-
-      console.log("✅ Upload successful! File ID:", uploadData.file_id);
-
-      // Step 2: Analyze the uploaded file
-      console.log("🔄 Starting analysis at /analyze (this may take 2-10 seconds)...");
-      const analyzeUrl = `/api/analyze/${uploadData.file_id}`;
-      console.log("🔄 Analyze URL:", analyzeUrl);
-
-      try {
-        const analyzeRes = await fetch(analyzeUrl, {
-          method: 'POST',
-        });
-
-        console.log("📊 Analysis response status:", analyzeRes.status);
-        
-        if (!analyzeRes.ok) {
-          const errorData = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
-          throw new Error(errorData?.detail || `Analysis failed with status ${analyzeRes.status}`);
-        }
-
-        const analysis = await analyzeRes.json();
-        console.log("📊 Analysis response data:", analysis);
-
-        if (!analysis) {
-          throw new Error('No analysis data received from server');
-        }
-
-        console.log("✅ Analysis complete!");
-        setReport(analysis);
-      } catch (fetchError: unknown) {
-        const fetchMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
-        console.error("❌ Analysis fetch error:", fetchMsg);
-        
-        // Check if it's a network error
-        if (fetchMsg.includes('Failed to fetch') || fetchMsg.includes('Network')) {
-          throw new Error(`Network error: Could not connect to backend. Make sure backend is running on port 8000. Error: ${fetchMsg}`);
-        }
-        throw fetchError;
-      }
+      const analysis = await analyzeRes.json();
+      setReport(analysis);
     } catch (e: unknown) {
-      const errorMsg = e instanceof Error ? e.message : String(e);
-      console.error("❌ Error:", errorMsg, e);
-      setError(errorMsg);
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files && e.target.files[0];
+    const f = e.target.files?.[0];
     if (f) upload(f);
   };
 
-  const reportText = report ? JSON.stringify(report, null, 2) : '';
-  
-  // Parse report to show formatted verdict
-  const getVerdictBadge = () => {
-    if (!report || typeof report !== 'object') return null;
-    
-    const reportData = report as any;
-    const items = reportData.items || [];
-    const summary = reportData.summary || {};
-    
-    // Calculate overall verdict based on overpriced percentage
-    const totalItems = summary.total_items || 0;
-    const overpricedCount = summary.overpriced_count || 0;
-    const percentOverpriced = totalItems > 0 ? (overpricedCount / totalItems) * 100 : 0;
-    
-    let verdict = 'GREEN';
-    if (percentOverpriced > 50) verdict = 'RED';
-    else if (percentOverpriced > 20) verdict = 'YELLOW';
-    
-    // Calculate possible savings from overpriced items
-    const savings = items
-      .filter((item: any) => item.verdict === 'Overpriced')
-      .reduce((total: number, item: any) => total + (item.difference || 0), 0);
-    
-    const badgeMap: { [key: string]: { bg: string; text: string; emoji: string } } = {
-      'GREEN': { bg: 'bg-green-100', text: 'text-green-700', emoji: '🟢' },
-      'YELLOW': { bg: 'bg-yellow-100', text: 'text-yellow-700', emoji: '🟡' },
-      'RED': { bg: 'bg-red-100', text: 'text-red-700', emoji: '🔴' },
-    };
-    
-    const style = badgeMap[verdict];
-    
+  const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
+
+  const getVerdictStyle = (verdict: string) => {
+    switch (verdict) {
+      case 'RED':    return { bg: 'bg-red-50',    border: 'border-red-300',    text: 'text-red-700',    emoji: '🔴' };
+      case 'YELLOW': return { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-700', emoji: '🟡' };
+      case 'GREEN':  return { bg: 'bg-green-50',  border: 'border-green-300',  text: 'text-green-700',  emoji: '🟢' };
+      default:       return { bg: 'bg-gray-50',   border: 'border-gray-300',   text: 'text-gray-700',   emoji: '⚪' };
+    }
+  };
+
+  const getItemVerdictStyle = (verdict: string) => {
+    switch (verdict) {
+      case 'Overpriced':   return { bg: 'bg-red-50',  badge: 'bg-red-100 text-red-700',     emoji: '🔴' };
+      case 'Normal':       return { bg: 'bg-white',   badge: 'bg-green-100 text-green-700', emoji: '🟢' };
+      case 'Undercharged': return { bg: 'bg-blue-50', badge: 'bg-blue-100 text-blue-700',   emoji: '🔵' };
+      default:             return { bg: 'bg-gray-50', badge: 'bg-gray-100 text-gray-500',   emoji: '⚪' };
+    }
+  };
+
+  const renderReport = () => {
+    if (!report) return null;
+    const { items, summary, warning } = report;
+    const overpricedCount = summary?.overpriced_count || 0;
+    const totalItems = summary?.total_items || items.length;
+    const totalSavings = summary?.total_savings ||
+      items.filter(i => i.verdict === 'Overpriced').reduce((s, i) => s + i.difference, 0);
+    const totalBilled = summary?.total_billed ||
+      items.reduce((s, i) => s + i.bill_amount, 0);
+    const pct = totalItems > 0 ? overpricedCount / totalItems : 0;
+    const overallVerdict = summary?.overall_verdict ||
+      (pct > 0.5 ? 'RED' : pct > 0.2 ? 'YELLOW' : 'GREEN');
+    const vs = getVerdictStyle(overallVerdict);
+
     return (
-      <div className={`${style.bg} ${style.text} p-4 rounded-lg mb-4 border`}>
-        <div className="text-lg font-bold mb-2">{style.emoji} Verdict: {verdict}</div>
-        <div className="text-sm mb-2">Overpriced Items: <span className="font-semibold">{overpricedCount}/{totalItems}</span></div>
-        <div className="text-sm">Possible Savings: <span className="font-semibold">₹{savings.toFixed(2)}</span></div>
+      <div className="mt-6 space-y-4">
+        {warning && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 text-yellow-800 text-sm">
+            ⚠️ {warning}
+          </div>
+        )}
+
+        {/* Verdict Summary Box */}
+        <div className={`${vs.bg} ${vs.border} border-2 rounded-xl p-5`}>
+          <div className={`text-2xl font-bold ${vs.text} mb-3`}>
+            {vs.emoji} Verdict: {overallVerdict}
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-3 text-center shadow-sm">
+              <div className="text-xs text-gray-500 mb-1">Total Items</div>
+              <div className="text-xl font-bold text-gray-800">{totalItems}</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 text-center shadow-sm">
+              <div className="text-xs text-gray-500 mb-1">Overpriced</div>
+              <div className="text-xl font-bold text-red-600">{overpricedCount}/{totalItems}</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 text-center shadow-sm">
+              <div className="text-xs text-gray-500 mb-1">Possible Savings</div>
+              <div className="text-xl font-bold text-green-600">{fmt(totalSavings)}</div>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-opacity-30 flex justify-between text-sm">
+            <span className={vs.text}>Total Billed Amount</span>
+            <span className={`font-bold ${vs.text}`}>{fmt(totalBilled)}</span>
+          </div>
+        </div>
+
+        {/* Items Table */}
+        {items.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-gray-800 px-4 py-3">
+              <h4 className="text-white font-semibold text-sm">📋 Itemized Bill Analysis</h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-100 border-b border-gray-200">
+                    <th className="text-left px-4 py-3 text-gray-600 font-semibold">Item</th>
+                    <th className="text-right px-4 py-3 text-gray-600 font-semibold">Billed</th>
+                    <th className="text-right px-4 py-3 text-gray-600 font-semibold">Reference</th>
+                    <th className="text-right px-4 py-3 text-gray-600 font-semibold">Difference</th>
+                    <th className="text-center px-4 py-3 text-gray-600 font-semibold">Verdict</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => {
+                    const ivs = getItemVerdictStyle(item.verdict);
+                    return (
+                      <tr key={idx} className={`${ivs.bg} border-b border-gray-100 hover:brightness-95 transition-all`}>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-800">{item.name}</div>
+                          {item.category && <div className="text-xs text-gray-400 mt-0.5">{item.category}</div>}
+                          {item.matched_as && <div className="text-xs text-blue-400 mt-0.5">matched: {item.matched_as}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold text-gray-800">{fmt(item.bill_amount)}</td>
+                        <td className="px-4 py-3 text-right text-gray-500">
+                          {item.reference_price > 0 ? fmt(item.reference_price) : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {item.difference > 0 ? (
+                            <span className="text-red-600 font-semibold">+{fmt(item.difference)}</span>
+                          ) : item.difference < 0 ? (
+                            <span className="text-blue-600">{fmt(item.difference)}</span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${ivs.badge}`}>
+                            {ivs.emoji} {item.verdict}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-gray-800">
+                    <td className="px-4 py-3 text-white font-bold">Total</td>
+                    <td className="px-4 py-3 text-right text-white font-bold">{fmt(totalBilled)}</td>
+                    <td className="px-4 py-3"></td>
+                    <td className="px-4 py-3 text-right text-red-300 font-bold">
+                      {totalSavings > 0 ? `+${fmt(totalSavings)} overcharged` : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
+                        overallVerdict === 'RED' ? 'bg-red-500 text-white' :
+                        overallVerdict === 'YELLOW' ? 'bg-yellow-500 text-white' :
+                        'bg-green-500 text-white'
+                      }`}>
+                        {vs.emoji} {overallVerdict}
+                      </span>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {totalSavings > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-800">
+            💡 <strong>Tip:</strong> You may be able to save <strong>{fmt(totalSavings)}</strong> by
+            questioning overpriced items with your hospital billing department.
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <NavBar />
+<div className="min-h-screen bg-transparent">
+        <NavBar />
+
+      {/* ── Hero with Shader Background ── */}
       <Hero onPick={openPicker} />
+
+      {/* ── Upload / Report Section ── */}
       <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4">
-        <div className="flex items-center gap-2 sm:gap-3 mb-4">
-          {loading && (
-            <div className="flex items-center gap-2 text-blue-600 font-medium text-sm sm:text-base">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              Processing...
-            </div>
-          )}
-        </div>
         <input
           ref={fileRef}
           type="file"
@@ -173,37 +243,34 @@ function App() {
           style={{ display: 'none' }}
           onChange={onFileChange}
         />
-
+        {loading && (
+          <div className="flex items-center justify-center gap-3 py-8 text-blue-600">
+            <div className="w-6 h-6 border-2 border-white-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="font-medium">Analyzing your bill... this may take 10-20 seconds</span>
+          </div>
+        )}
         {error && (
-          <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm">
-            Error: {error}
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+            ❌ {error}
           </div>
         )}
-
-        {report != null && (
-          <div className="mt-4 bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
-            <h3 className="font-semibold mb-3 text-sm sm:text-base">Analysis Report</h3>
-            {getVerdictBadge()}
-            <div className="overflow-x-auto">
-              <pre className="whitespace-pre-wrap text-xs sm:text-sm max-h-96 overflow-y-auto">
-                {reportText}
-              </pre>
-            </div>
+        {report && (
+          <div className="mt-4">
+            <h3 className="font-bold text-lg text-white mb-2">Analysis Report</h3>
+            {renderReport()}
           </div>
         )}
-
+        
+      </div>
+      <HowItWorks />
+        <Features />
+        <Demo />
+        <WhyMatters />
         <div className="my-8">
           <EarlyAccessForm />
         </div>
-      </div>
-
-      <HowItWorks />
-      <Features />
-      <Demo />
-      <Technology />
-      <WhyMatters />
-      <Testimonials />
-      <FAQ />
+        <FAQ />
+      {/* ── Footer ── */}
       <Footer />
     </div>
   );

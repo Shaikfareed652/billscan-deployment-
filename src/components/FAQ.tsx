@@ -4,6 +4,13 @@ import { ChevronDown } from 'lucide-react';
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const faqs = [
     {
       question: 'Is my data secure?',
@@ -32,13 +39,13 @@ export default function FAQ() {
   ];
 
   return (
-    <section id="faq" className="py-12 sm:py-20 bg-white">
+    <section id="faq" className="py-12 sm:py-20">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">
+          <p className="text-base sm:text-lg md:text-xl text-white max-w-2xl mx-auto px-2">
             Everything you need to know about BillScan
           </p>
         </div>
@@ -56,6 +63,7 @@ export default function FAQ() {
                 <span className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 pr-4 sm:pr-8">
                   {faq.question}
                 </span>
+
                 <ChevronDown
                   className={`w-4 sm:w-5 h-4 sm:h-5 text-gray-600 flex-shrink-0 transition-transform duration-300 ${
                     openIndex === index ? 'rotate-180' : ''
@@ -77,10 +85,15 @@ export default function FAQ() {
         </div>
 
         <div className="mt-16 text-center">
-          <p className="text-gray-600 mb-4">Still have questions?</p>
-          <button className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300">
+          <p className="text-white mb-4">Still have questions?</p>
+
+          <button
+            onClick={scrollToContact}
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+          >
             Contact Support
           </button>
+
         </div>
       </div>
     </section>

@@ -2,131 +2,117 @@ import { Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer
+      id="contact"
+      style={{
+        background: 'rgba(252, 251, 254, 0.95)',
+        borderTop: '1px solid rgba(139,92,246,0.2)',
+      }}
+    >
       <div className="container mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+          {/* Brand */}
           <div>
             <div className="flex flex-col items-start gap-4 mb-6">
               <a href="#home" className="flex-shrink-0">
-                <img src="/IMG_20251231_144047__1_-removebg-preview.png" alt="BillScan Logo" className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform hover:scale-110 duration-300" />
+                <img
+                  src="/IMG_20251231_144047__1_-removebg-preview.png"
+                  alt="BillScan Logo"
+                  className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform hover:scale-110 duration-300"
+                />
               </a>
-              <span className="text-2xl sm:text-3xl font-bold text-white">BillScan</span>
             </div>
-            <p className="text-gray-400 leading-relaxed mb-6">
+            <p className="leading-relaxed mb-6" style={{ color: '#1c1b1f' }}>
               AI-powered hospital bill auditing for fair, transparent healthcare billing.
             </p>
             <div className="flex gap-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-300"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-300"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-600 flex items-center justify-center transition-colors duration-300"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
+              {[Twitter, Linkedin, Facebook].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  style={{
+                    background: 'rgba(9, 9, 11, 0.2)',
+                    border: '1px solid rgba(139,92,246,0.3)',
+                    color: '#181719',
+                  }}
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
 
+          {/* Product */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Product</h3>
+            <h3 className="font-semibold text-lg mb-6 text-black">Product</h3>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  How It Works
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Demo
-                </a>
-              </li>
+              {['How It Works', 'Features', 'Pricing', 'Demo'].map(item => (
+                <li key={item}>
+                  <a href="#" className="transition-colors duration-200 hover:text-white" style={{ color: '#232227' }}>
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Company */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Company</h3>
+            <h3 className="font-semibold text-lg mb-6 text-black">Company</h3>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors duration-200">
-                  Contact
-                </a>
-              </li>
+              {['About Us', 'Careers', 'Blog', 'Contact'].map(item => (
+                <li key={item}>
+                  <a href="#contact" className="transition-colors duration-200 hover:text-white" style={{ color: '#45444a' }}>
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Contact</h3>
+            <h3 className="font-semibold text-lg mb-6 text-black">Contact</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <a href="mailto:support@billscan.ai" className="hover:text-white transition-colors duration-200">
-                  support@billscan.ai
+                <Mail className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2a282f' }} />
+                <a href="mailto:info@billscanai.tech" className="hover:text-white transition-colors" style={{ color: '#1e1d22' }}>
+                  info@billscanai.tech
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <a href="tel:+919701864124" className="hover:text-white transition-colors duration-200">
-                  +91970184124
+                <Phone className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2c2a30' }} />
+                <a href="tel:+919701864124" className="hover:text-white transition-colors" style={{ color: '#1a191d' }}>
+                  +919701864124
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <span>Hyderabad, Telangana, India</span>
+                <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#302f34' }} />
+                <span style={{ color: '#1c1b20' }}>Hyderabad, Telangana, India</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8">
+        {/* Bottom bar */}
+        <div style={{ borderTop: '1px solid rgba(139,92,246,0.2)' }} className="pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">
+            <p className="text-sm" style={{ color: '#1a1720' }}>
               © 2024 BillScan. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
-              <a href="#" className="text-gray-500 hover:text-white transition-colors duration-200">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-gray-500 hover:text-white transition-colors duration-200">
-                Terms of Service
-              </a>
-              <a href="#" className="text-gray-500 hover:text-white transition-colors duration-200">
-                Cookie Policy
-              </a>
+              {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
+                <a
+                  key={item}
+                  href="#"
+                  className="hover:text-white transition-colors duration-200"
+                  style={{ color: '#2a282d' }}
+                >
+                  {item}
+                </a>
+              ))}
             </div>
           </div>
         </div>

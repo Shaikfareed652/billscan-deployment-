@@ -41,7 +41,6 @@ export default function EarlyAccessForm() {
 
     setLoading(true);
     try {
-      // Replace YOUR_FORM_ID with your Formspree form ID
       const res = await fetch("https://formspree.io/f/xjggpgdy", {
         method: "POST",
         headers: {
@@ -69,22 +68,27 @@ export default function EarlyAccessForm() {
   };
 
   return (
-    <section id="early-access" className="py-12 sm:py-20 px-4 bg-gray-50">
-      <div className="max-w-md mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 md:p-8">
-        <h3 className="text-xl sm:text-2xl font-semibold text-center mb-1 sm:mb-2">
+    <section id="early-access" className="py-12 sm:py-20 px-4">
+      
+      {/* Glass Card */}
+      <div className="max-w-md mx-auto rounded-xl p-4 sm:p-6 md:p-8 border border-white/40 bg-white/10 backdrop-blur-md shadow-xl">
+
+        <h3 className="text-xl sm:text-2xl text-white font-semibold text-center mb-1 sm:mb-2">
           Get Early Access
         </h3>
-        <p className="text-xs sm:text-sm text-gray-500 text-center mb-4 sm:mb-6">
+
+        <p className="text-xs sm:text-sm text-white/80 text-center mb-4 sm:mb-6">
           Join the waitlist to try the beta.
         </p>
 
         <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4">
+
           <input
             name="name"
             placeholder="Your name"
             value={form.name}
             onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-white/40 bg-white/20 text-white placeholder-white/70 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
@@ -93,7 +97,7 @@ export default function EarlyAccessForm() {
             placeholder="Email address"
             value={form.email}
             onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-white/40 bg-white/20 text-white placeholder-white/70 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
@@ -101,14 +105,15 @@ export default function EarlyAccessForm() {
             placeholder="Company (optional)"
             value={form.company}
             onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-white/40 bg-white/20 text-white placeholder-white/70 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {error && (
-            <p className="text-red-600 text-xs sm:text-sm text-center">{error}</p>
+            <p className="text-red-400 text-xs sm:text-sm text-center">{error}</p>
           )}
+
           {success && (
-            <p className="text-green-600 text-xs sm:text-sm text-center">{success}</p>
+            <p className="text-green-400 text-xs sm:text-sm text-center">{success}</p>
           )}
 
           <button
@@ -118,27 +123,10 @@ export default function EarlyAccessForm() {
           >
             {loading ? "Submitting..." : "Join Waitlist"}
           </button>
+
         </form>
       </div>
+
     </section>
   );
 }
-
-/* 
-SETUP INSTRUCTIONS (takes 2 minutes):
-======================================
-
-1. Go to https://formspree.io/
-2. Click "Get Started" (no credit card needed for free tier)
-3. Create a new form
-4. Copy your form ID (looks like: xjkvvdwb)
-5. Replace YOUR_FORM_ID in the code above
-6. Done!
-
-Formspree will:
-- Send you emails with submissions
-- Store them in a dashboard
-- Let you export to Excel/CSV
-
-Free tier: 50 submissions/month (perfect for early access!)
-*/
