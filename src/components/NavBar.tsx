@@ -7,9 +7,9 @@ export default function NavBar() {
     <header
       className="w-full sticky top-0 z-40"
       style={{
-        background: 'rgb(237, 227, 227)',
+        background: 'rgb(255, 255, 255)',
         backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(139,92,246,0.2)',
+        borderBottom: '1px solid rgba(11, 11, 11, 0.2)',
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
