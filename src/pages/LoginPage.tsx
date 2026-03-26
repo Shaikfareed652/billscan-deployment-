@@ -37,15 +37,20 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
         throw new Error(e.detail || 'Google login failed');
       }
       const data = JSON.parse(text);
-      // Save token manually since we bypass AuthContext login()
       sessionStorage.setItem('bs_token', data.access_token);
       sessionStorage.setItem('bs_email', data.user_email);
-      window.location.reload(); // Reload to trigger AuthContext to pick up new session
+      window.location.reload();
     } catch (e: any) {
       setError(e.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  const continueAsGuest = () => {
+    sessionStorage.setItem('bs_token', 'guest');
+    sessionStorage.setItem('bs_email', 'Guest User');
+    window.location.reload();
   };
 
   return (
@@ -83,7 +88,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
           ))}
         </div>
 
-        {/* Email + Password Form */}
+        {/* Inputs */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm mb-1" style={{ color: '#c4b5fd' }}>Email</label>
@@ -103,6 +108,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(139,92,246,0.3)' }} />
           </div>
 
+          {/* Error */}
           {error && (
             <div className="p-3 rounded-xl text-sm"
               style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}>
@@ -110,6 +116,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
             </div>
           )}
 
+          {/* Submit */}
           <button onClick={submit} disabled={loading}
             className="w-full py-3 rounded-xl font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -117,13 +124,13 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
           </button>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-2">
+          <div className="flex items-center gap-3">
             <div className="flex-1 h-px" style={{ background: 'rgba(139,92,246,0.3)' }} />
             <span className="text-xs" style={{ color: '#7c3aed' }}>or</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(139,92,246,0.3)' }} />
           </div>
 
-          {/* Google Login Button */}
+          {/* Google Login */}
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogle}
@@ -135,6 +142,30 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               width="368"
             />
           </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: 'rgba(139,92,246,0.1)' }} />
+            <span className="text-xs" style={{ color: '#6b7280' }}>or</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(139,92,246,0.1)' }} />
+          </div>
+
+          {/* Guest Button */}
+          <button
+            onClick={continueAsGuest}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#9ca3af',
+            }}>
+            👤 Continue as Guest
+          </button>
+
+          {/* Guest warning */}
+          <p className="text-center text-xs" style={{ color: '#6b7280' }}>
+            Guest mode — bill history won't be saved
+          </p>
         </div>
       </div>
     </div>

@@ -30,6 +30,13 @@ interface ReportSummary {
 }
 
 interface AnalysisReport {
+  fraud_detection?: {
+    fraud_probability: number;
+    fraud_probability_percent: string;
+    fraud_risk: string;
+    risk_emoji: string;
+    explanation: string;
+  };
   items: BillItem[];
   summary: ReportSummary;
   warning?: string;
@@ -64,18 +71,22 @@ function App() {
       form.append('file', file, file.name);
 
       const uploadRes = await fetch('/api/upload-bill', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: form,
-      });
+  method: 'POST',
+  headers: token && token !== 'guest'
+    ? { 'Authorization': `Bearer ${token}` }
+    : {},
+  body: form,
+});
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData?.detail || 'Upload failed');
       if (!uploadData?.file_id) throw new Error('No file ID returned');
 
       const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+  method: 'POST',
+  headers: token && token !== 'guest'
+    ? { 'Authorization': `Bearer ${token}` }
+    : {},
+});
       if (!analyzeRes.ok) {
         const err = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
         throw new Error(err?.detail || 'Analysis failed');
@@ -161,6 +172,37 @@ function App() {
             <span className={`font-bold ${vs.text}`}>{fmt(totalBilled)}</span>
           </div>
         </div>
+
+        {/* ML Fraud Detection Card */}
+        {report.fraud_detection && (
+          <div className="rounded-xl p-5 border-2 mt-4"
+            style={{
+              background: report.fraud_detection.fraud_risk === 'HIGH' ? 'rgba(239,68,68,0.1)'
+                : report.fraud_detection.fraud_risk === 'MEDIUM' ? 'rgba(234,179,8,0.1)'
+                : 'rgba(34,197,94,0.1)',
+              borderColor: report.fraud_detection.fraud_risk === 'HIGH' ? 'rgb(239,68,68)'
+                : report.fraud_detection.fraud_risk === 'MEDIUM' ? 'rgb(234,179,8)'
+                : 'rgb(34,197,94)',
+            }}>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">{report.fraud_detection.risk_emoji}</span>
+              <div>
+                <div className="font-bold text-white">ML Fraud Detection — {report.fraud_detection.fraud_risk} RISK</div>
+                <div className="text-sm" style={{color:'#c4b5fd'}}>Fraud Probability: {report.fraud_detection.fraud_probability_percent}</div>
+              </div>
+            </div>
+            <p className="text-sm" style={{color:'#e9d5ff'}}>💡 {report.fraud_detection.explanation}</p>
+            <div className="mt-3 h-3 rounded-full bg-gray-700">
+              <div className="h-3 rounded-full transition-all"
+                style={{
+                  width: report.fraud_detection.fraud_probability_percent,
+                  background: report.fraud_detection.fraud_risk === 'HIGH' ? 'rgb(239,68,68)'
+                    : report.fraud_detection.fraud_risk === 'MEDIUM' ? 'rgb(234,179,8)'
+                    : 'rgb(34,197,94)',
+                }} />
+            </div>
+          </div>
+        )}
 
         {/* Items Table */}
         {items.length > 0 && (
