@@ -1,7 +1,7 @@
 import joblib
 import numpy as np
 from pathlib import Path
-from backend.app.ml.features import extract_features
+from app.ml.features import extract_features
 
 _model = None
 

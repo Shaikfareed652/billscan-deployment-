@@ -7,7 +7,7 @@ from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
-from backend.app.ml.training_data import TRAINING_BILLS
+from app.ml.training_data import TRAINING_BILLS
 
 X = np.array([b[0] for b in TRAINING_BILLS])
 y = np.array([b[1] for b in TRAINING_BILLS])

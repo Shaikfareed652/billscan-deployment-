@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.api.routes import router as bill_router
-from backend.app.auth.routes import router as auth_router
+from app.api.routes import router as bill_router
+from app.auth.routes import router as auth_router
 
 app = FastAPI(title="BillScan AI", version="1.0.0")
 

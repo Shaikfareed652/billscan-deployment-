@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from pathlib import Path
+from datetime import datetime
 import uuid
 
 router = APIRouter()
@@ -18,7 +19,7 @@ def get_optional_user(
     if token == 'guest':
         return None
     try:
-        from backend.app.auth.utils import decode_token
+        from app.auth.utils import decode_token
         return decode_token(token)
     except Exception:
         return None
@@ -41,10 +42,10 @@ def analyze_file(
     file_id: str,
     current_user: Optional[str] = Depends(get_optional_user)
 ):
-    from backend.app.core.ocr import extract_text
-    from backend.app.core.parser import parse_rows
-    from backend.app.core.analyzer import analyze_items
-    from backend.app.db import get_db
+    from app.core.ocr import extract_text
+    from app.core.parser import parse_rows
+    from app.core.analyzer import analyze_items
+    from app.db import get_db
 
     dest = UPLOADS_DIR / file_id
     if not dest.exists():
@@ -57,17 +58,42 @@ def analyze_file(
 
         # ML Fraud Detection
         try:
-            from backend.app.ml.predictor import predict_fraud
+            from app.ml.predictor import predict_fraud
             fraud = predict_fraud(result["items"], result["summary"]["total_billed"])
             result["fraud_detection"] = fraud
         except Exception as e:
             result["fraud_detection"] = {"fraud_risk": "UNKNOWN", "explanation": str(e)}
 
+        # Save bill history to MongoDB
         if current_user:
-            get_db()["users"].update_one(
+            db = get_db()
+            db["users"].update_one(
                 {"email": current_user},
                 {"$inc": {"bills_analyzed": 1}}
             )
+            db["bills"].insert_one({
+                "email": current_user,
+                "file_id": file_id,
+                "analyzed_at": datetime.utcnow().isoformat(),
+                "summary": result["summary"],
+                "fraud_detection": result.get("fraud_detection", {}),
+                "items": result["items"],
+            })
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/bills/history")
+def get_bill_history(
+    current_user: Optional[str] = Depends(get_optional_user)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Login required to view history")
+    from app.db import get_db
+    db = get_db()
+    bills = list(db["bills"].find(
+        {"email": current_user},
+        {"_id": 0}
+    ).sort("analyzed_at", -1).limit(20))
+    return {"bills": bills}

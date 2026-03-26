@@ -1,6 +1,7 @@
 import { useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
-import React, { useRef, useState } from 'react';
+import DashboardPage from "./pages/DashboardPage";
+import React, { useRef, useState, useCallback } from 'react';
 import NavBar from './components/NavBar';
 import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
@@ -30,6 +31,9 @@ interface ReportSummary {
 }
 
 interface AnalysisReport {
+  items: BillItem[];
+  summary: ReportSummary;
+  warning?: string;
   fraud_detection?: {
     fraud_probability: number;
     fraud_probability_percent: string;
@@ -37,9 +41,6 @@ interface AnalysisReport {
     risk_emoji: string;
     explanation: string;
   };
-  items: BillItem[];
-  summary: ReportSummary;
-  warning?: string;
 }
 
 function App() {
@@ -52,10 +53,15 @@ function App() {
   );
 
   if (!user) return <LoginPage onSuccess={() => {}} />;
+
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [localHistory, setLocalHistory] = useState<AnalysisReport[]>([]);
+  const [shareMsg, setShareMsg] = useState('');
 
   const openPicker = () => fileRef.current?.click();
 
@@ -71,22 +77,18 @@ function App() {
       form.append('file', file, file.name);
 
       const uploadRes = await fetch('/api/upload-bill', {
-  method: 'POST',
-  headers: token && token !== 'guest'
-    ? { 'Authorization': `Bearer ${token}` }
-    : {},
-  body: form,
-});
+        method: 'POST',
+        headers: token && token !== 'guest' ? { 'Authorization': `Bearer ${token}` } : {},
+        body: form,
+      });
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData?.detail || 'Upload failed');
       if (!uploadData?.file_id) throw new Error('No file ID returned');
 
       const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, {
-  method: 'POST',
-  headers: token && token !== 'guest'
-    ? { 'Authorization': `Bearer ${token}` }
-    : {},
-});
+        method: 'POST',
+        headers: token && token !== 'guest' ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       if (!analyzeRes.ok) {
         const err = await analyzeRes.json().catch(() => ({ detail: 'Unknown error' }));
         throw new Error(err?.detail || 'Analysis failed');
@@ -94,6 +96,7 @@ function App() {
 
       const analysis = await analyzeRes.json();
       setReport(analysis);
+      setLocalHistory(prev => [{ ...analysis, analyzed_at: new Date().toISOString() }, ...prev]);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -104,6 +107,42 @@ function App() {
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) upload(f);
+  };
+
+  // Drag & Drop handlers
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+
+  const onDragLeave = useCallback(() => setDragging(false), []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) upload(f);
+  }, [token]);
+
+  // Share report
+  const shareReport = async () => {
+    if (!report) return;
+    const text = `🏥 BillScan AI Report\n` +
+      `Verdict: ${report.summary.overall_verdict}\n` +
+      `Total Billed: ₹${report.summary.total_billed.toLocaleString('en-IN')}\n` +
+      `Overpriced Items: ${report.summary.overpriced_count}/${report.summary.total_items}\n` +
+      `Possible Savings: ₹${report.summary.total_savings.toLocaleString('en-IN')}\n` +
+      (report.fraud_detection ? `ML Fraud Risk: ${report.fraud_detection.fraud_risk} (${report.fraud_detection.fraud_probability_percent})\n` : '') +
+      `\nAnalyzed with BillScan AI — billscanai.tech`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareMsg('✅ Copied to clipboard!');
+      setTimeout(() => setShareMsg(''), 3000);
+    } catch {
+      setShareMsg('❌ Could not copy');
+      setTimeout(() => setShareMsg(''), 3000);
+    }
   };
 
   const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
@@ -133,11 +172,9 @@ function App() {
     const totalItems = summary?.total_items || items.length;
     const totalSavings = summary?.total_savings ||
       items.filter(i => i.verdict === 'Overpriced').reduce((s, i) => s + i.difference, 0);
-    const totalBilled = summary?.total_billed ||
-      items.reduce((s, i) => s + i.bill_amount, 0);
+    const totalBilled = summary?.total_billed || items.reduce((s, i) => s + i.bill_amount, 0);
     const pct = totalItems > 0 ? overpricedCount / totalItems : 0;
-    const overallVerdict = summary?.overall_verdict ||
-      (pct > 0.5 ? 'RED' : pct > 0.2 ? 'YELLOW' : 'GREEN');
+    const overallVerdict = summary?.overall_verdict || (pct > 0.5 ? 'RED' : pct > 0.2 ? 'YELLOW' : 'GREEN');
     const vs = getVerdictStyle(overallVerdict);
 
     return (
@@ -175,7 +212,7 @@ function App() {
 
         {/* ML Fraud Detection Card */}
         {report.fraud_detection && (
-          <div className="rounded-xl p-5 border-2 mt-4"
+          <div className="rounded-xl p-5 border-2"
             style={{
               background: report.fraud_detection.fraud_risk === 'HIGH' ? 'rgba(239,68,68,0.1)'
                 : report.fraud_detection.fraud_risk === 'MEDIUM' ? 'rgba(234,179,8,0.1)'
@@ -187,11 +224,17 @@ function App() {
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">{report.fraud_detection.risk_emoji}</span>
               <div>
-                <div className="font-bold text-white">ML Fraud Detection — {report.fraud_detection.fraud_risk} RISK</div>
-                <div className="text-sm" style={{color:'#c4b5fd'}}>Fraud Probability: {report.fraud_detection.fraud_probability_percent}</div>
+                <div className="font-bold text-white">
+                  ML Fraud Detection — {report.fraud_detection.fraud_risk} RISK
+                </div>
+                <div className="text-sm" style={{ color: '#c4b5fd' }}>
+                  Fraud Probability: {report.fraud_detection.fraud_probability_percent}
+                </div>
               </div>
             </div>
-            <p className="text-sm" style={{color:'#e9d5ff'}}>💡 {report.fraud_detection.explanation}</p>
+            <p className="text-sm" style={{ color: '#e9d5ff' }}>
+              💡 {report.fraud_detection.explanation}
+            </p>
             <div className="mt-3 h-3 rounded-full bg-gray-700">
               <div className="h-3 rounded-full transition-all"
                 style={{
@@ -203,6 +246,23 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Share Button */}
+        <div className="flex items-center gap-3">
+          <button onClick={shareReport}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105"
+            style={{ background: 'rgba(139,92,246,0.2)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.4)' }}>
+            📤 Share Report
+          </button>
+          {shareMsg && (
+            <span className="text-sm font-medium" style={{ color: '#34d399' }}>{shareMsg}</span>
+          )}
+          <button onClick={() => { setReport(null); openPicker(); }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105"
+            style={{ background: 'rgba(96,165,250,0.2)', color: '#93c5fd', border: '1px solid rgba(96,165,250,0.4)' }}>
+            🔄 Analyze Another Bill
+          </button>
+        </div>
 
         {/* Items Table */}
         {items.length > 0 && (
@@ -288,24 +348,14 @@ function App() {
   };
 
   return (
-<div className="min-h-screen bg-transparent">
-        <div className="fixed top-2 right-4 z-50 flex items-center gap-3">
-        <span className="text-xs px-3 py-1 rounded-full"
-          style={{ background: 'rgba(139,92,246,0.2)', color: '#c4b5fd' }}>
-          👤 {user.email}
-        </span>
-        <button onClick={logout}
-          className="text-xs px-3 py-1 rounded-full font-semibold"
-          style={{ background: 'rgba(239,68,68,0.2)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)' }}>
-          Logout
-        </button>
-      </div>
-      <NavBar />
+    <div className="min-h-screen bg-transparent">
 
-      {/* ── Hero with Shader Background ── */}
+
+
+      <NavBar onHistoryClick={() => setShowDashboard(true)} />
       <Hero onPick={openPicker} />
 
-      {/* ── Upload / Report Section ── */}
+      {/* Upload / Report Section */}
       <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4">
         <input
           ref={fileRef}
@@ -314,35 +364,60 @@ function App() {
           style={{ display: 'none' }}
           onChange={onFileChange}
         />
+
+        {/* Drag & Drop Zone */}
+        {!report && !loading && (
+          <div
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            onClick={openPicker}
+            className="cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all"
+            style={{
+              borderColor: dragging ? '#a78bfa' : 'rgba(139,92,246,0.4)',
+              background: dragging ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.04)',
+            }}>
+            <div className="text-5xl mb-3">{dragging ? '📂' : '📄'}</div>
+            <p className="text-white font-semibold text-lg mb-1">
+              {dragging ? 'Drop your bill here!' : 'Drag & drop your hospital bill'}
+            </p>
+            <p className="text-sm" style={{ color: '#9ca3af' }}>
+              or <span style={{ color: '#a78bfa' }}>click to browse</span> — JPG, PNG, PDF up to 50MB
+            </p>
+          </div>
+        )}
+
         {loading && (
           <div className="flex items-center justify-center gap-3 py-8 text-blue-600">
             <div className="w-6 h-6 border-2 border-white-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="font-medium">Analyzing your bill... this may take 10-20 seconds</span>
+            <span className="font-medium text-white">Analyzing your bill... this may take 10-20 seconds</span>
           </div>
         )}
+
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
             ❌ {error}
           </div>
         )}
+
         {report && (
           <div className="mt-4">
             <h3 className="font-bold text-lg text-white mb-2">Analysis Report</h3>
             {renderReport()}
           </div>
         )}
-        
       </div>
+
       <HowItWorks />
-        <Features />
-        <Demo />
-        <WhyMatters />
-        <div className="my-8">
-          <EarlyAccessForm />
-        </div>
-        <FAQ />
-      {/* ── Footer ── */}
+      <Features />
+      <Demo />
+      <WhyMatters />
+      <div className="my-8"><EarlyAccessForm /></div>
+      <FAQ />
       <Footer />
+
+      {/* Dashboard Modal */}
+      {showDashboard && <DashboardPage onClose={() => setShowDashboard(false)} localHistory={localHistory} />}
     </div>
   );
 }
