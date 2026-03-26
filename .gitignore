@@ -23,8 +23,6 @@ dist-ssr
 .env
 
 # Backend and python artifacts
-backend/
-backend
 __pycache__/
 *.pyc
 .venv
