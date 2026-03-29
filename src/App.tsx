@@ -145,7 +145,7 @@ function App() {
     }
   };
 
-  const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
+  const fmt = (n: number) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
   const getVerdictStyle = (verdict: string) => {
     switch (verdict) {
