@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120">
+  <rect width="100%" height="100%" fill="transparent" />
+  <g font-family="Segoe UI, Roboto, Arial, sans-serif">
+    <text x="120" y="48" font-size="34" font-weight="700" fill="#0B63C6">BillScan</text>
+    <text x="320" y="48" font-size="34" font-weight="700" fill="#28A745">AI</text>
+    <text x="120" y="78" font-size="14" fill="#6B7280">Smart Medical Bill Analysis</text>
+  </g>
+  <g transform="translate(8,12)">
+    <rect x="0" y="6" width="92" height="68" rx="8" fill="#ffffff" stroke="#0B63C6" stroke-width="3" />
+    <path d="M18 30 L46 30" stroke="#0B63C6" stroke-width="4" stroke-linecap="round" />
+    <circle cx="70" cy="20" r="10" fill="#28A745" />
+  </g>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120">
+  <rect width="100%" height="100%" fill="transparent" />
+  <g transform="translate(12,12)">
+    <rect x="0" y="10" width="84" height="84" rx="14" fill="#0ea5e9" />
+    <text x="110" y="64" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700" fill="#0b69b4">BillScan</text>
+    <text x="320" y="64" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700" fill="#16a34a">AI</text>
+    <text x="110" y="96" font-family="Inter, Arial, sans-serif" font-size="14" fill="#6b7280">Smart Medical Bill Analysis</text>
+  </g>
+</svg>
