@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import { useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -76,7 +77,7 @@ function App() {
       const form = new FormData();
       form.append('file', file, file.name);
 
-      const uploadRes = await fetch('/api/upload-bill', {
+      const uploadRes = await fetch(apiUrl('/upload-bill'), {
         method: 'POST',
         headers: token && token !== 'guest' ? { 'Authorization': `Bearer ${token}` } : {},
         body: form,
