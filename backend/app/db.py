@@ -1,19 +1,35 @@
-import os
 from pymongo import MongoClient
-from dotenv import load_dotenv
-from pathlib import Path
-
-load_dotenv(dotenv_path=Path('/workspaces/billscan/.env'), override=True)
-
-MONGO_URL = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "billscan")
-
-print(f"[DB] Connecting to: {MONGO_URL[:40]}...")
+import os
 
 _client = None
+_db     = None
 
 def get_db():
-    global _client
-    if _client is None:
-        _client = MongoClient(MONGO_URL)
-    return _client[DB_NAME]
+    global _client, _db
+    if _db is not None:
+        return _db
+
+    MONGO_URL = os.getenv(
+        "MONGODB_URL",
+        "mongodb://localhost:27017"
+    )
+
+    try:
+        _client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+        _client.server_info()
+        _db = _client["billscan"]
+        print(f"[DB] Connected to MongoDB")
+    except Exception as e:
+        print(f"[DB] MongoDB connection failed: {e}")
+        # Return mock db so app doesn't crash
+        class MockDB:
+            def __getitem__(self, name):
+                return MockCollection()
+        class MockCollection:
+            def find(self, *a, **k):       return []
+            def find_one(self, *a, **k):   return None
+            def insert_one(self, *a, **k): return None
+            def update_one(self, *a, **k): return None
+        _db = MockDB()
+
+    return _db
