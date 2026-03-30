@@ -86,7 +86,7 @@ function App() {
       if (!uploadRes.ok) throw new Error(uploadData?.detail || 'Upload failed');
       if (!uploadData?.file_id) throw new Error('No file ID returned');
 
-      const analyzeRes = await fetch(`/api/analyze/${uploadData.file_id}`, {
+      const analyzeRes = await fetch(`${apiUrl('/analyze/')}${uploadData.file_id}`, {
         method: 'POST',
         headers: token && token !== 'guest' ? { 'Authorization': `Bearer ${token}` } : {},
       });
