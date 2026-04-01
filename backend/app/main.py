@@ -6,16 +6,14 @@ import os
 
 app = FastAPI(title="BillScan AI", version="1.0.0")
 
-# Get frontend URL from environment
-FRONTEND_URL = os.getenv("FRONTEND_URL", "*")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        FRONTEND_URL,
+        "https://billscanai.tech",
+        "https://www.billscanai.tech",
+        "https://shaikfareed22.github.io",
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://*.github.io",
         "*"
     ],
     allow_credentials=True,
@@ -28,7 +26,7 @@ app.include_router(auth_router)
 
 @app.get("/")
 def root():
-    return {"status": "BillScan AI Running", "version": "1.0.0"}
+    return {"status": "BillScan AI Running"}
 
 @app.get("/health")
 def health():
