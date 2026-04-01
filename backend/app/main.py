@@ -8,14 +8,7 @@ app = FastAPI(title="BillScan AI", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://billscanai.tech",
-        "https://www.billscanai.tech",
-        "https://shaikfareed22.github.io",
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "*"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,6 +16,16 @@ app.add_middleware(
 
 app.include_router(bill_router)
 app.include_router(auth_router)
+
+@app.on_event("startup")
+async def startup_event():
+    print("[STARTUP] Pre-loading OCR model...")
+    try:
+        from app.core.ocr import get_reader
+        get_reader()
+        print("[STARTUP] OCR model ready!")
+    except Exception as e:
+        print(f"[STARTUP] OCR preload failed: {e}")
 
 @app.get("/")
 def root():
