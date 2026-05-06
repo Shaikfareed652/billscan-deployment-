@@ -37,3 +37,5 @@ __pycache__/
 *.pyc
 *.joblib
 backend/uploads/
+.vercel
+.env*.local

@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.auth.schemas import RegisterRequest, LoginRequest, TokenResponse
 from app.auth.utils import hash_password, verify_password, create_token, get_current_user
 from app.db import get_db
+import os
+import logging
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -35,15 +37,75 @@ def get_me(current_user: str = Depends(get_current_user)):
 
 @router.post("/google", response_model=TokenResponse)
 def google_login(payload: dict):
-    from google.oauth2 import id_token
-    from google.auth.transport import requests as grequests
-    GOOGLE_CLIENT_ID = "137346476008-9cb4dd70c9j5c3gld2cpn3sqvp7pb9d7.apps.googleusercontent.com"
+    # Retrieve Google Client ID from environment variables
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+    if not GOOGLE_CLIENT_ID:
+        logging.error("GOOGLE_CLIENT_ID environment variable is not set")
+        raise HTTPException(status_code=500, detail="Server configuration error")
+    
+    # Check if credential is provided in the request body
+    if "credential" not in payload:
+        logging.warning("Missing 'credential' in request payload")
+        raise HTTPException(status_code=400, detail="Missing credential")
+    
     try:
+        # Import Google auth libraries
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as grequests
+        
+        # Verify the Google ID token
         info = id_token.verify_oauth2_token(payload["credential"], grequests.Request(), GOOGLE_CLIENT_ID)
-        email = info["email"]
+        
+        # Extract user profile information
+        email = info.get("email")
+        name = info.get("name")
+        picture = info.get("picture")
+        
+        if not email:
+            logging.error("Google token does not contain email")
+            raise HTTPException(status_code=401, detail="Invalid Google token: no email")
+        
+        logging.info(f"Successfully verified Google token for user: {email}")
+        
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid Google token: {e}")
+        logging.error(f"Google token verification failed: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+    
+    # Database operations
     db = get_db()
-    if not db["users"].find_one({"email": email.lower()}):
-        db["users"].insert_one({"email": email.lower(), "hashed_password": "", "google_user": True, "bills_analyzed": 0})
-    return TokenResponse(access_token=create_token(email), user_email=email)
+    user = db["users"].find_one({"email": email.lower()})
+    
+    if not user:
+        # Create new user with Google profile
+        db["users"].insert_one({
+            "email": email.lower(),
+            "hashed_password": "",
+            "google_user": True,
+            "name": name,
+            "picture": picture,
+            "bills_analyzed": 0
+        })
+        logging.info(f"Created new Google user: {email}")
+    else:
+        # Update existing user with profile info if missing
+        update_data = {}
+        if not user.get("name") and name:
+            update_data["name"] = name
+        if not user.get("picture") and picture:
+            update_data["picture"] = picture
+        if update_data:
+            db["users"].update_one({"email": email.lower()}, {"$set": update_data})
+            logging.info(f"Updated profile for existing user: {email}")
+    
+    # Return authentication response with user profile
+    user_profile = {
+        "email": email,
+        "name": name,
+        "picture": picture
+    }
+    
+    return TokenResponse(
+        access_token=create_token(email),
+        user_email=email,
+        user_profile=user_profile
+    )

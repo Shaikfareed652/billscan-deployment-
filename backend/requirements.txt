@@ -18,3 +18,4 @@ opencv-python-headless==4.10.0.84
 email-validator==2.1.0
 email-validator==2.1.0
 pydantic[email]==2.12.5
+google-auth==2.29.0
